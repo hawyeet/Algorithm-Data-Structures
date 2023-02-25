@@ -52,7 +52,6 @@ int main() {
 	// menu
 	int choice, j, x, y, z;
 	float w;
-	char grading[2];
 	do {
 		printf("Welcome to simple student database (%d/100)\n", i);
 		puts("1. Show all students");
