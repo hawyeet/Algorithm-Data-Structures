@@ -74,7 +74,7 @@ int main() {
 				Scores[j].details.score.final, Scores[j].details.score.grade);
 			}
 			printf("Press any key to continue");
-			getch();
+			getchar();
 			printf("\n\n");
 			break;
 		case 2:
@@ -150,13 +150,13 @@ int main() {
 					
 				i++;
 				printf("Inserting data\nNew student added\nPress any key to continue");
-				getch();
+				getchar();
 				printf("\n\n");
 				break;
 			}
 			else {
 				printf("Database is full\nPress any key to continue\n");
-				getch();
+				getchar();
 				printf("\n");
 				break;
 			}
