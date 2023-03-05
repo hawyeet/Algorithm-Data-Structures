@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <malloc.h>
 
 typedef struct Mahasiswa {
 	char nama[100];
@@ -10,32 +9,17 @@ typedef struct Mahasiswa {
 	struct Mahasiswa *next;
 }	Mahasiswa;
 
-Mahasiswa *createNewNode(int nim, char *nama, char *jurusan);
-void printLinkedlist(Mahasiswa *head);
-void deleteAllData(Mahasiswa *head);
-void deleteFirstData(Mahasiswa *head);
-void deleteByNim(Mahasiswa *head, int a);
+Mahasiswa *head = NULL;
+
+void inputStudent();
+void showStudent();
+void deleteAll();
+void deleteFirst();
+void deleteNIM(int a);
 
 int main() {
-	int choice, b;
-	Mahasiswa *head, *node, *a;
-	head = NULL;
-	a = node = (Mahasiswa*) malloc(sizeof(Mahasiswa));
 	
-	node = createNewNode(14026, "James Christian Wira", "Informatika");
-	head = node;
-
-	Mahasiswa *tail;
-	tail = node;
-
-	node = createNewNode(17492, "Matthew Evans", "Informatika");
-	tail->next = node;
-	tail = node;
-
-	node = createNewNode(13633, "Justin Susanto", "Informatika");
-	node->next = head;
-	head = node;
-
+	int choice, a;
 	do {
 		puts("Welcome to simple student database");
 		puts("1. Input new student");
@@ -49,122 +33,119 @@ int main() {
 		
 		switch(choice) {
 			case 1:
-				puts("Insert student information");
-				printf("NIM       : ");
-				scanf("%d", &a->nim);
-				printf("Nama      : ");
-				scanf("%s", a->nama);
-				printf("Jurusan   : ");
-				scanf("%s", a->jurusan);
-				
-				if (head != NULL) {
-					node = createNewNode(a->nim, a->nama, a->jurusan);
-					tail->next = node;
-					tail = node;
-				}
-				else {
-					node = createNewNode(a->nim, a->nama, a->jurusan);
-					head = node;
-					tail = node;
-				}
-				
+				inputStudent();
 				printf("\n");
 				break;
 			case 2:
-				printLinkedlist(head);
+				showStudent();
 				printf("\n");
 				break;
 			case 3:
-				deleteAllData(head);
+				deleteAll();
 				printf("\n");
 				break;
 			case 4:
-				deleteFirstData(head);
+				deleteFirst();
 				printf("\n");
 				break;
 			case 5:
-				printf("Enter NIM of student to delete: ");
-				scanf("%d", &b);
-				deleteByNim(head, b);
+				printf("Enter NIM to delete : ");
+				scanf("%d", &a);
+				deleteNIM(a);
+				printf("\n");
 				break;
 			case 6:
 				exit(0);
 		}
 		choice = 0;
 	} while(choice<1 || choice>5);
-
-	// printf("Data SEBELUM di hapus\n");
-	// printLinkedlist(head);
-
-	// Mahasiswa *trash, *temp;
-	// trash = head;
-	// while(strcmp(trash->next->nama, "James Christian Wira") == 1){
-	// 	printf("%s\n", trash->nama);
-	// 	trash = trash->next;
-	// }
-	// if (trash->nim == head->nim) printf("true\n");
-	// else printf("false\n");
-	// temp = trash;
-	// trash = trash->next;
-	// temp->next = trash->next;
-	// tail->next = NULL;
-	// free(trash);
-
-	// printf("Data SETELAH di hapus\n");
-	// printLinkedlist(head);
-
+	
 	return 0;
 }
 
-Mahasiswa *createNewNode(int nim, char *nama, char *jurusan) {
-	Mahasiswa *newNode = (Mahasiswa*)malloc(sizeof(Mahasiswa));
-	newNode->nim = nim;
-	strcpy(newNode->nama, nama);
-	strcpy(newNode->jurusan, jurusan);
+void inputStudent() {
+	Mahasiswa *newNode = (Mahasiswa*) malloc(sizeof(Mahasiswa*));
+	
+	puts("Insert student information.");
+	printf("NIM     : ");
+	scanf("%d", &newNode->nim);
+	getchar();
+	printf("Nama    : ");
+	scanf("%[^\n]s", newNode->nama);
+	getchar();
+	printf("Jurusan : ");
+	scanf("%[^\n]s", newNode->jurusan);
+	getchar();
 	newNode->next = NULL;
-	return newNode;
+	
+	if (head == NULL) {
+		head = newNode;
+	}
+	else {
+		Mahasiswa *current = head;
+		while(current->next != NULL) {
+			current = current->next;
+		}
+		current->next = newNode;
+	}
+	
 }
 
-void printLinkedlist(Mahasiswa *head) {
-	Mahasiswa *temp;
-	temp = head;
-	int i = 1;
-	while(temp != NULL) {
-		printf("Data ke %d\n", i);
-		printf("NIM      : %d\n", temp->nim);
-		printf("Nama     : %s\n", temp->nama);
-		printf("Jurusan  : %s\n\n", temp->jurusan);
-		temp = temp->next;
-		i++;
+void showStudent() {
+	if (head == NULL) {
+		printf("There is no student information.\n");
+		return;
+	}
+	else {
+		Mahasiswa *current = head;
+		int i = 1;
+		while (current != NULL) {
+			printf("Data ke %d\n", i);
+			printf("NIM      : %d\n", current->nim);
+			printf("Nama     : %s\n", current->nama);
+			printf("Jurusan  : %s\n\n", current->jurusan);
+			current = current->next;
+			i++;
+		}
 	}
 }
 
-void deleteAllData(Mahasiswa *head) {
-	Mahasiswa *trash;
-	while(head != NULL) {
+void deleteAll() {
+	while (head != NULL) {
+		Mahasiswa *trash = head;
+		head = head->next;
+		free(trash);
+	}
+}
+
+void deleteFirst() {
+	if (head == NULL) {
+        return;
+    }
+    
+    Mahasiswa *trash = head;
+    head = head->next;
+    free(trash);
+}
+
+void deleteNIM(int a) {
+	Mahasiswa *trash, *current;
+	
+	if (head == NULL) {
+		printf("There is no student information.\n");
+		return;
+	}
+	else if (head->nim == a) {
 		trash = head;
-		free(head);
-		head = head->next;	
 	}
-}
-
-void deleteFirstData(Mahasiswa *head) {
-	Mahasiswa *trash;
-	trash = head;
+	else {
+		while(head->next->nim != a) {
+			head->next = head->next->next;
+		}
+		trash = head->next;
+	}
+	
 	head = head->next;
-	free(trash);
-	}
+    free(trash);
 
-void deleteByNim(Mahasiswa *head, int b) {
-	Mahasiswa *trash, *temp;
-	trash = head;
-	while(trash->nim != b) {
-		trash = trash->next;
-	}
-
-	temp = trash;
-	trash = trash->next;
-	temp->next = trash->next;
-	trash->next = NULL;
-	free(trash);
 }
