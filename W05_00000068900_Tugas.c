@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_CHARACTERS 100
+#define MAX_CHARACTERS 20
 
 typedef struct Song {
 	char singer[MAX_CHARACTERS];
@@ -13,21 +13,22 @@ typedef struct Song {
 } Song;
 
 Song *head = NULL;
-Song *tail = NULL;
 Song *node = NULL;
+Song *current = NULL;
 
 void printMenu();
-Song *addNode(char *singer, char *album, char *title, int year, Song **tail);
+Song *addNode(Song *head, char *singer, char *album, char *title, int year);
 void fscanfData();
 void fprintfData();
 void showData();
 void inputData();
 void eraseData();
+void freeMemory();
 
-int main(){
+int main() {
 
 	int choice;
-
+	fscanfData();
 	do {
 		printMenu();
 		scanf("%d", &choice);
@@ -35,19 +36,23 @@ int main(){
 
 		switch (choice) {
 		case 1:
-			fscanfData();
-
+			showData();
+			current = head;
 			break;
 		case 2:
+			inputData();
+			fprintfData();
 			break;
 		case 3:
+			current = head;
+			eraseData();
+			fprintfData();
 			break;
 		case 4:
-			// free memory
+			freeMemory();
 			exit(0);
 		}
-
-	} while (choice >= 1 || choice <= 4);
+	} while (choice >= 1 && choice <= 4);
 
 	return 0;
 }
@@ -61,56 +66,153 @@ void printMenu() {
 	printf("Choice: ");
 }
 
-Song *addNode(char *singer, char *album, char *title, int year, Song **tail) {
-	Song *newNode = (Song*) malloc(sizeof(Song*));
+Song *addNode(Song *head, char *singer, char *album, char *title, int year) {
+    Song *newNode = (Song*) malloc(sizeof(Song));
 
-	strcpy(newNode->singer, singer);
-	strcpy(newNode->album, album);
-	strcpy(newNode->title, title);
-	newNode->year = year;
-	newNode->next = NULL;
-	newNode->prev = (*tail)->prev;
-	(*tail)->next = newNode;
-	*tail = newNode;
+    if (newNode == NULL) {
+        fprintf(stderr, "Error: failed to allocate memory for new node.\n");
+        return NULL;
+    }
 
-	return newNode;
+    strcpy(newNode->singer, singer);
+    strcpy(newNode->album, album);
+    strcpy(newNode->title, title);
+    newNode->year = year;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+
+    if (head == NULL) {
+        head = newNode;
+    } else {
+        Song *lastNode = head;
+        while (lastNode->next != NULL) {
+            lastNode = lastNode->next;
+        }
+        lastNode->next = newNode;
+        newNode->prev = lastNode;
+    }
+
+    return newNode;
 }
 
 void fscanfData() {
-	int i = 0;
+    Song s;
+    Song *current = NULL;
+    FILE *fP = fopen("playlist.txt", "r");
+    
+    if (fP == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+    
+    while (fscanf(fP, "%[^*]*%[^*]*%[^*]*%d\n", s.singer, s.album, s.title, &s.year) == 4) {
+        Song *newNode = addNode(head, s.singer, s.album, s.title, s.year);
+        
+        if (head == NULL) {
+            head = newNode;
+            current = head;
+        } else {
+            current->next = newNode;
+            newNode->prev = current;
+            current = current->next;
+        }
+    }
+    
+    fclose(fP);
+}
+	
+void fprintfData() {
+	Song *current = head;
+    FILE *fP = fopen("playlist.txt", "w");
+    
+    if (fP == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+    
+    while (current != NULL) {
+        fprintf(fP, "%s*%s*%s*%d\n", current->singer, current->album, current->title, current->year);
+        current = current->next;
+    }
+    
+    fclose(fP);
+}
+	
+void showData() {
+    Song *current = head;
 
-	FILE *fP = fopen("playlist.txt", "r");
-	while (!feof(fP)) {
-		Song s;
-		fscanf(fP, "%[^*]*%[^*]*%[^*]*%d\n", s.singer, s.album, s.title, &s.year);
-		node = addNode(s.singer, s.album, s.title, s.year, &tail);
+    printf("%-20s %-30s %-20s %-10s\n", "Singer", "Song Title", "Album", "Released Date");
+    printf("--------------------------------------------------------------------------------------\n");
 
-		if (head == NULL) {
-			head = node;
-		}
-		else {
-			Song *current = head;
-			while(current->next != NULL) {
-			current = current->next;
-			}
-			current->next = node;
-		printf("%s %s %s %d\n", s.singer, s.album, s.title, s.year);
-		}
-	}
+    while (current != NULL) {
+        printf("%-20s %-30s %-20s %-10d\n", current->singer, current->title, current->album, current->year);
+        current = current->next;
+    }
 
-	fclose(fP);
+    printf("\n");
 }
 
-void fprintfData(Song *head) {
-	Song *temp;
-	temp = head;
-	// int j = 1;
-	// while(temp != NULL) {
-	// 	printf("Data ke %d\n", j);
-	// 	printf("NIM     : %d\n", temp->nim);
-	// 	printf("Nama    : %s\n", temp->nama);
-	// 	printf("Jurusan : %s\n", temp->jurusan);
-	// 	temp = temp->next;
-	// 	j++;
-	// }
+void inputData() {
+	
+    Song *input = (Song*) malloc(sizeof(Song));
+    if (input == NULL) {
+        fprintf(stderr, "Error: failed to allocate memory for input.\n");
+        return;
+    }
+
+    printf("Input Singer     : ");
+    scanf("%s", input->singer);
+    printf("Album            : ");
+    scanf("%s", input->album);
+    printf("Title            : ");
+    scanf("%s", input->title);
+    printf("Released Year    : ");
+    scanf("%d", &input->year);
+    printf("Data berhasil ditambahkan!\n\n");
+
+    Song *inputNode = addNode(head, input->singer, input->album, input->title, input->year);
+    if (head == NULL) {
+        head = inputNode;
+        current = head;
+        printf("%s", current->album);
+    } else {
+        current = inputNode;
+        current->next = NULL;
+        inputNode->prev = current;
+        current->prev = inputNode->prev;
+    }
+    
+    while (current->next != NULL) {
+        current = current->next;
+    }
+}
+
+void eraseData() {
+    if (head == NULL) {
+        return;
+    }
+
+    Song *temp = head;
+    if (temp->next == NULL) {
+        head = NULL;
+        free(temp);
+        return;
+    }
+
+    while (temp->next->next != NULL) {
+        temp = temp->next;
+    }
+
+    Song *trash = temp->next;
+    temp->next = NULL;
+    free(trash);
+}
+
+void freeMemory() {
+    Song *temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
 }
