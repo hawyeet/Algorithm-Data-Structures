@@ -23,7 +23,7 @@ void enqueue(Mahasiswa **head, Mahasiswa **tail, char nim[], char nama[], char j
 	strcpy(data->jurusan, jurusan);
 	data->next = NULL;
 
-	if (!isEmpty(*head)) *head = data;
+	if (isEmpty(*head)) *head = data;
 	else (*tail)->next = data;
 	*tail = data;
 	printf("Adding %s to queue\n", nama);
